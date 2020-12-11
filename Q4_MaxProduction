@@ -1,0 +1,44 @@
+import numpy as np
+import pulp
+from scipy.optimize import minimize
+from scipy.optimize import Bounds
+from scipy.optimize import LinearConstraint
+
+
+def integrate_profit(levels,produces,profits):
+	sum = 0
+	for p ,l ,profit in zip(produces, levels, profits):
+		if p.varValue == 1.0:
+			sum = sum + l.varValue * profit
+	return sum
+
+Level1 = pulp.LpVariable("Level1", lowBound = 0,upBound = 100, cat = "Integer")
+Level2 = pulp.LpVariable("Level2", lowBound = 101, upBound = 200, cat = "Integer")
+Level3 = pulp.LpVariable("Level3", lowBound = 201, upBound = 500, cat = "Integer")
+
+Levels = {Level1,Level2,Level3}
+
+Produce_1 = pulp.LpVariable("ProduceOrNot1", lowBound = 0, upBound = 1, cat = "Binary")
+Produce_2 = pulp.LpVariable("ProduceOrNot2", lowBound = 0, upBound = 1, cat = "Binary")
+Produce_3 = pulp.LpVariable("ProduceOrNot3", lowBound = 0, upBound = 1, cat = "Binary")
+
+Produces = {Produce_1,Produce_2,Produce_3}
+
+Profits = {10,11,12}
+
+profit = pulp.LpProblem("Maximize Profit", pulp.LpMaximize)
+profit += 10*Level1 + 11*Level2 + 12*Level3, "Objective Function"
+profit += Produce_1+Produce_2+Produce_3 == 1, "Constraint for production binary"
+
+
+
+profit.solve()
+
+
+
+print("Decision Variable Values:")
+for i in profit.variables():
+	print(i.name, "=", i.varValue)
+
+print("The maximized profit is:",integrate_profit(Levels,Produces,Profits))
+
